@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: xbid
+      POSTGRES_USER: xbid
+      POSTGRES_PASSWORD: xbid
+    ports:
+      - "55432:5432"
+    volumes:
+      - xbid_postgres_data:/var/lib/postgresql/data
+      - ../../database-postgresql-drizzle/migrations/0000_app_foundation.sql:/docker-entrypoint-initdb.d/0000_app_foundation.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xbid -d xbid"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  xbid_postgres_data:
