@@ -48,6 +48,7 @@ data:
       PRIMARY KEY (key_hash, bucket_start)
     );
     CREATE INDEX IF NOT EXISTS write_rate_limit_expiry_idx ON app.write_rate_limit (bucket_start);
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE app.write_rate_limit TO xbid;
 
     CREATE TABLE IF NOT EXISTS app.comment (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(), chain_id integer NOT NULL,
