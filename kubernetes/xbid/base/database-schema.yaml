@@ -5,8 +5,13 @@ metadata:
 data:
   001-app-schema.sql: |
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
-    CREATE SCHEMA IF NOT EXISTS app;
-    CREATE SCHEMA IF NOT EXISTS chain_projection;
+    CREATE SCHEMA IF NOT EXISTS app AUTHORIZATION xbid;
+    CREATE SCHEMA IF NOT EXISTS chain_projection AUTHORIZATION xbid;
+    ALTER SCHEMA app OWNER TO xbid;
+    ALTER SCHEMA chain_projection OWNER TO xbid;
+    GRANT ALL ON SCHEMA app, chain_projection TO xbid;
+
+    SET ROLE xbid;
 
     DO $$ BEGIN
       CREATE TYPE comment_status AS ENUM ('ACTIVE', 'AUTHOR_DELETED', 'MOD_HIDDEN');
@@ -78,3 +83,5 @@ data:
       created_at timestamptz NOT NULL DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS contest_metadata_creator_idx ON app.contest_metadata (creator_address, created_at DESC);
+
+    RESET ROLE;
