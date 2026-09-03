@@ -4,7 +4,7 @@ XBID uses one DigitalOcean Kubernetes cluster with strict environment isolation:
 
 | Environment | Namespace | Web | API | Database |
 | --- | --- | --- | --- | --- |
-| Testnet | `xbid-testnet` | `testnet.xbid.live` | `api.testnet.xbid.live` | dedicated single-instance CloudNativePG |
+| Testnet | `xbid-testnet` | `testnet.xbid.live` | `api-testnet.xbid.live` | dedicated single-instance CloudNativePG |
 | Mainnet | `xbid-mainnet` | `xbid.live` | `api.xbid.live` | dedicated HA CloudNativePG |
 
 The two environments never share secrets, databases, volumes, contract
@@ -36,6 +36,12 @@ kubectl create secret docker-registry ghcr \
 Before applying, point both Testnet DNS records at the existing NGINX ingress
 load balancer and verify that the `wechart` ClusterIssuer is Ready.
 
+Releases that change the projection schema are coordinated releases. Apply the
+latest `xbid-database` migration first, deploy the indexer and wait for it to
+finish replaying to the current confirmed block, then deploy the backend and
+frontend. In particular, the balance, public-volume and trader-performance
+projections must exist before the corresponding API image is started.
+
 ```bash
 kubectl kustomize kubernetes/xbid/overlays/testnet
 kubectl apply --dry-run=server -k kubernetes/xbid/overlays/testnet
@@ -44,6 +50,10 @@ kubectl rollout status deployment/xbid-backend -n xbid-testnet
 kubectl rollout status deployment/xbid-indexer -n xbid-testnet
 kubectl rollout status deployment/xbid-frontend -n xbid-testnet
 ```
+
+After DNS propagation, verify both the primary `api-testnet.xbid.live` endpoint
+and the legacy `api.testnet.xbid.live` endpoint. The legacy host remains routed
+so immutable metadata URLs created before the hostname change continue to work.
 
 ## Production rules
 

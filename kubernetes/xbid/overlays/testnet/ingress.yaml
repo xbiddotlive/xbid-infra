@@ -32,9 +32,19 @@ metadata:
 spec:
   ingressClassName: nginx
   tls:
-    - hosts: [api.testnet.xbid.live]
+    - hosts: [api-testnet.xbid.live, api.testnet.xbid.live]
       secretName: xbid-testnet-api-tls
   rules:
+    - host: api-testnet.xbid.live
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: xbid-backend
+                port:
+                  name: http
     - host: api.testnet.xbid.live
       http:
         paths:

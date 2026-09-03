@@ -30,6 +30,7 @@ data:
       created_at timestamptz NOT NULL DEFAULT now()
     );
     CREATE UNIQUE INDEX IF NOT EXISTS wallet_nonce_active_unique ON app.wallet_nonce (chain_id, address, nonce_hash);
+    CREATE INDEX IF NOT EXISTS wallet_nonce_expiry_idx ON app.wallet_nonce (expires_at);
 
     CREATE TABLE IF NOT EXISTS app.wallet_session (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(), chain_id integer NOT NULL,
@@ -38,20 +39,31 @@ data:
       created_at timestamptz NOT NULL DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS wallet_session_address_idx ON app.wallet_session (chain_id, address);
+    CREATE UNIQUE INDEX IF NOT EXISTS wallet_session_token_unique ON app.wallet_session (token_hash);
+    CREATE INDEX IF NOT EXISTS wallet_session_expiry_idx ON app.wallet_session (expires_at);
+
+    CREATE TABLE IF NOT EXISTS app.write_rate_limit (
+      key_hash varchar(66) NOT NULL, bucket_start bigint NOT NULL,
+      request_count integer NOT NULL DEFAULT 1,
+      PRIMARY KEY (key_hash, bucket_start)
+    );
+    CREATE INDEX IF NOT EXISTS write_rate_limit_expiry_idx ON app.write_rate_limit (bucket_start);
 
     CREATE TABLE IF NOT EXISTS app.comment (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(), chain_id integer NOT NULL,
       contest_id varchar(66) NOT NULL, market_vault varchar(42) NOT NULL,
       market_version integer NOT NULL, author_address varchar(42) NOT NULL,
       root_comment_id uuid, parent_comment_id uuid, reply_to_comment_id uuid,
-      body text NOT NULL, body_normalized_hash varchar(66) NOT NULL,
+      body text NOT NULL, body_normalized_hash varchar(66) NOT NULL, challenge_id uuid,
       status comment_status NOT NULL DEFAULT 'ACTIVE',
       position_side_at_post position_side NOT NULL DEFAULT 'UNVERIFIED',
       position_block_number bigint, created_at timestamptz NOT NULL DEFAULT now(),
       deleted_at timestamptz
     );
     CREATE INDEX IF NOT EXISTS comment_contest_live_idx ON app.comment (chain_id, contest_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS comment_author_rate_idx ON app.comment (chain_id, contest_id, author_address, created_at DESC);
     CREATE INDEX IF NOT EXISTS comment_root_idx ON app.comment (root_comment_id, created_at ASC);
+    CREATE UNIQUE INDEX IF NOT EXISTS comment_challenge_unique ON app.comment (challenge_id) WHERE challenge_id IS NOT NULL;
 
     CREATE TABLE IF NOT EXISTS app.comment_reaction (
       chain_id integer NOT NULL, comment_id uuid NOT NULL,
@@ -59,6 +71,26 @@ data:
       created_at timestamptz NOT NULL DEFAULT now(),
       PRIMARY KEY (chain_id, comment_id, user_address, type)
     );
+    DO $$ BEGIN
+      ALTER TABLE app.comment ADD CONSTRAINT comment_parent_fk
+        FOREIGN KEY (parent_comment_id) REFERENCES app.comment(id) ON DELETE SET NULL NOT VALID;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
+    DO $$ BEGIN
+      ALTER TABLE app.comment ADD CONSTRAINT comment_root_fk
+        FOREIGN KEY (root_comment_id) REFERENCES app.comment(id) ON DELETE SET NULL NOT VALID;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
+    DO $$ BEGIN
+      ALTER TABLE app.comment ADD CONSTRAINT comment_reply_to_fk
+        FOREIGN KEY (reply_to_comment_id) REFERENCES app.comment(id) ON DELETE SET NULL NOT VALID;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
+    DO $$ BEGIN
+      ALTER TABLE app.comment_reaction ADD CONSTRAINT comment_reaction_comment_fk
+        FOREIGN KEY (comment_id) REFERENCES app.comment(id) ON DELETE CASCADE NOT VALID;
+    EXCEPTION WHEN duplicate_object THEN NULL;
+    END $$;
 
     CREATE TABLE IF NOT EXISTS app.outbox_event (
       sequence bigserial PRIMARY KEY, event_id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -73,9 +105,10 @@ data:
     CREATE TABLE IF NOT EXISTS app.uploaded_asset (
       content_hash varchar(66) PRIMARY KEY, mime_type varchar(32) NOT NULL,
       byte_size integer NOT NULL CHECK (byte_size > 0 AND byte_size <= 2097152),
-      storage_key text NOT NULL UNIQUE, original_name text,
+      storage_key text NOT NULL UNIQUE, original_name text, uploader_address varchar(42),
       created_at timestamptz NOT NULL DEFAULT now()
     );
+    CREATE INDEX IF NOT EXISTS uploaded_asset_uploader_created_idx ON app.uploaded_asset (uploader_address, created_at DESC) WHERE uploader_address IS NOT NULL;
 
     CREATE TABLE IF NOT EXISTS app.contest_metadata (
       metadata_hash varchar(66) PRIMARY KEY, metadata_uri text NOT NULL UNIQUE,
