@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: xbid-frontend
+  annotations:
+    cert-manager.io/cluster-issuer: wechart
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [xbid.live]
+      secretName: xbid-mainnet-web-tls
+  rules:
+    - host: xbid.live
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: xbid-frontend
+                port:
+                  name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: xbid-backend
+  annotations:
+    cert-manager.io/cluster-issuer: wechart
+    nginx.ingress.kubernetes.io/proxy-body-size: 3m
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [api.xbid.live]
+      secretName: xbid-mainnet-api-tls
+  rules:
+    - host: api.xbid.live
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: xbid-backend
+                port:
+                  name: http

@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: xbid-mainnet
+resources:
+  - ../../base
+  - namespace.yaml.example
+  - database.yaml.example
+  - ingress.yaml.example
+  - quota.yaml
+  - scaling.yaml
+configMapGenerator:
+  - name: xbid-environment
+    envs:
+      - environment.env.example
+images:
+  - name: ghcr.io/xbidlive/xbid-frontend
+    newTag: REQUIRED_FRONTEND_COMMIT_SHA
+  - name: ghcr.io/xbidlive/xbid-backend
+    newTag: REQUIRED_BACKEND_COMMIT_SHA
+  - name: ghcr.io/xbidlive/xbid-indexer
+    newTag: REQUIRED_INDEXER_COMMIT_SHA

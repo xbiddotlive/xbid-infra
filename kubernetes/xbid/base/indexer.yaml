@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xbid-indexer
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: xbid-indexer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: xbid-indexer
+        app.kubernetes.io/component: indexer
+    spec:
+      imagePullSecrets:
+        - name: ghcr
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: indexer
+          image: ghcr.io/xbidlive/xbid-indexer:main
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 42069
+          envFrom:
+            - configMapRef:
+                name: xbid-environment
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: xbid-postgres-app
+                  key: uri
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1536Mi
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xbid-indexer
+spec:
+  selector:
+    app.kubernetes.io/name: xbid-indexer
+  ports:
+    - name: http
+      port: 42069
+      targetPort: http

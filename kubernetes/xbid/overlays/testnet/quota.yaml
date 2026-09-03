@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: xbid-testnet-budget
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 2Gi
+    limits.cpu: "4"
+    limits.memory: 5Gi
+    persistentvolumeclaims: "3"
+    requests.storage: 25Gi
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: xbid-testnet-defaults
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 50m
+        memory: 128Mi
+      default:
+        cpu: 500m
+        memory: 512Mi

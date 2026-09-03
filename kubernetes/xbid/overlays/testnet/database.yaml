@@ -1,0 +1,27 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: xbid-postgres
+spec:
+  instances: 1
+  bootstrap:
+    initdb:
+      database: xbid
+      owner: xbid
+      postInitApplicationSQLRefs:
+        configMapRefs:
+          - name: xbid-database-bootstrap
+            key: 001-app-schema.sql
+  storage:
+    storageClass: do-block-storage-retain
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
