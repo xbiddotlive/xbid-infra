@@ -66,6 +66,24 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
+  name: xbid-allow-indexer-status
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: xbid-indexer
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: xbid-backend
+      ports:
+        - protocol: TCP
+          port: 42069
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
   name: xbid-allow-database
 spec:
   podSelector:

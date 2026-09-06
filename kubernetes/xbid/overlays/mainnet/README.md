@@ -9,8 +9,14 @@ Mainnet prerequisites:
 
 1. Mainnet chain ID, RPC, explorer, contract addresses, deployment start block,
    reference contest and WalletConnect project ID are approved.
-2. A dedicated node pool has enough headroom for two web/API replicas, one
-   indexer and two PostgreSQL instances on distinct nodes.
+2. A dedicated node pool has enough headroom for two web replicas, one API
+   replica, one indexer and two PostgreSQL instances on distinct nodes. The API
+   must remain single-replica while uploads use the `ReadWriteOnce` volume;
+   move uploaded assets to shared object storage before enabling API horizontal
+   scaling.
+   The mainnet overlay uses `Recreate` for API rollout to prevent a surge pod on
+   another node from competing for the RWO volume. Plan a short API interruption;
+   this is not high availability. The one-replica PDB can also block node drains.
 3. `xbid.live` and `api.xbid.live` point to the ingress load balancer.
 4. Database backup and restore drills have passed.
 5. The image tags are immutable commit SHAs, never `latest` or `main`.

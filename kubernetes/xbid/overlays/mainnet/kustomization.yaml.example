@@ -8,6 +8,19 @@ resources:
   - ingress.yaml.example
   - quota.yaml
   - scaling.yaml
+patches:
+  - target:
+      kind: Deployment
+      name: xbid-backend
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: xbid-backend
+      spec:
+        strategy:
+          type: Recreate
+          rollingUpdate: null
 configMapGenerator:
   - name: xbid-environment
     envs:
