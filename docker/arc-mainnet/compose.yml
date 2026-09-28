@@ -83,7 +83,7 @@ services:
 
   frontend:
     <<: *service
-    image: xbid-arc-frontend:f31a1533e005055962d9e7cca81b9c253fe549fb
+    image: xbid-arc-frontend:346eec73f52282a108fe281e87f21ec8f6709fce
     build:
       context: ../../../frontend
       args:
