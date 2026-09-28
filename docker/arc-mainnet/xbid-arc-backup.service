@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up only XBID Arc database and uploads
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /opt/xbid-arc/current/infra/docker/arc-mainnet/backup.sh
+UMask=0077

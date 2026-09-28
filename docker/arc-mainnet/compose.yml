@@ -1,0 +1,139 @@
+name: xbid-arc
+
+x-service: &service
+  restart: unless-stopped
+  stop_grace_period: 30s
+  logging:
+    driver: local
+    options:
+      max-size: 10m
+      max-file: "3"
+  security_opt: [no-new-privileges:true]
+
+services:
+  postgres:
+    <<: *service
+    image: postgres:17-alpine
+    env_file: /opt/xbid-arc/secrets/database.env
+    command: [postgres, -c, shared_buffers=128MB, -c, max_connections=70]
+    mem_limit: 640m
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/00-xbid-init.sh:ro
+      - ../../../database/migrations:/migrations:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U xbid_admin -d xbid]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  indexer:
+    <<: *service
+    image: xbid-arc-indexer:c5a0b009eb970c2c5c6d3c9bdc08dee46c666bba
+    build: ../../../indexer
+    env_file:
+      - ./network.env
+      - /opt/xbid-arc/secrets/indexer.env
+    environment:
+      NODE_OPTIONS: --max-old-space-size=768
+      DATABASE_SCHEMA: chain_projection
+      PONDER_TELEMETRY_DISABLED: "true"
+    command: [pnpm, start, --hostname, 0.0.0.0, --port, "42069"]
+    mem_limit: 1200m
+    cap_drop: [ALL]
+    depends_on:
+      postgres: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:42069/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 6
+
+  backend:
+    <<: *service
+    image: xbid-arc-backend:a5f53f53cc637ec5cbdf8d85b17465f31b2c6e25
+    build: ../../../backend
+    env_file:
+      - ./network.env
+      - /opt/xbid-arc/secrets/backend.env
+    environment:
+      NODE_OPTIONS: --max-old-space-size=384
+      PORT: "4000"
+      CORS_ORIGINS: https://xbid.live
+      PUBLIC_API_URL: https://xbid.live/api/backend
+      INDEXER_STATUS_URL: http://indexer:42069/status
+      UPLOAD_DIR: /app/var/uploads
+      WRITE_SESSION_REQUIRED: "true"
+      SWAGGER_ENABLED: "false"
+    mem_limit: 512m
+    cap_drop: [ALL]
+    volumes:
+      - uploads:/app/var/uploads
+    depends_on:
+      postgres: {condition: service_healthy}
+      indexer: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:4000/v1/health').then(r=>r.json()).then(j=>{if(j.status!=='ok'||j.chain.chainId!==5042)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 15s
+      start_period: 30s
+      retries: 5
+
+  frontend:
+    <<: *service
+    image: xbid-arc-frontend:6435d41d739d00cbf31c68288be70c2c36e7e2c9
+    build:
+      context: ../../../frontend
+      args:
+        XBID_ENVIRONMENT: mainnet
+        NEXT_PUBLIC_APP_URL: https://xbid.live
+        NEXT_PUBLIC_API_URL: https://xbid.live/api/backend
+        NEXT_PUBLIC_CHAIN_ID: "5042"
+        NEXT_PUBLIC_CHAIN_NAME: Arc
+        NEXT_PUBLIC_CHAIN_RPC_URL: https://rpc.mainnet.arc.io
+        NEXT_PUBLIC_CHAIN_EXPLORER_NAME: Arc Explorer
+        NEXT_PUBLIC_CHAIN_EXPLORER_URL: https://explorer.arc.io
+        NEXT_PUBLIC_CHAIN_TESTNET: "false"
+        NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ""
+        NEXT_PUBLIC_XBID_FACTORY_ADDRESS: "0x9C83dCE5bdbDD84c5B624101A6F716bccbB2D9C1"
+        NEXT_PUBLIC_XBID_REGISTRY_ADDRESS: "0xf63b7567bB942CDC462F496377dc648B1C8B5cAe"
+        NEXT_PUBLIC_XBID_RISK_CONTROLLER_ADDRESS: "0x5daD4aB0078FEe813E262dfB2873Beed9373c0B4"
+        NEXT_PUBLIC_XBID_FEE_VAULT_ADDRESS: "0x7c6e7d09168D0BF8c865ecb33408F180B95BD5Ac"
+        NEXT_PUBLIC_XBID_SETTLEMENT_TOKEN_ADDRESS: "0x3600000000000000000000000000000000000000"
+        NEXT_PUBLIC_DEFAULT_CONTEST_ID: ""
+    environment:
+      XBID_ENVIRONMENT: mainnet
+      CHAIN_ID: "5042"
+      API_INTERNAL_URL: http://backend:4000
+      NODE_OPTIONS: --max-old-space-size=512
+    mem_limit: 768m
+    cap_drop: [ALL]
+    ports: ["127.0.0.1:3100:3000"]
+    depends_on:
+      backend: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 15s
+      start_period: 40s
+      retries: 5
+
+  caddy:
+    <<: *service
+    profiles: [public]
+    image: caddy:2-alpine
+    mem_limit: 192m
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend: {condition: service_healthy}
+
+volumes:
+  postgres:
+  uploads:
+  caddy_data:
+  caddy_config:
