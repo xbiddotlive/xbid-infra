@@ -1,0 +1,13 @@
+{
+  "release": "20260929-rpc-fix",
+  "purpose": "Same-origin official Arc RPC reads and explicit launch balance read failures",
+  "frontend": "f31a1533e005055962d9e7cca81b9c253fe549fb",
+  "backend": "30ad6e776cc32a3d48e2a51224498d66c1f43fde",
+  "indexer": "7fa6120f5f716643c7585bbd19d12e9e746fd6bb",
+  "database": "3d4dfb9a2523dcf109f6dab72de615fd1ff8e737",
+  "previousRelease": "20260929-v4-live",
+  "servicesToRecreate": ["frontend"],
+  "databaseMigrations": false,
+  "resetIndexer": false,
+  "contractTransactions": false
+}
