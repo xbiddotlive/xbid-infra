@@ -29,7 +29,7 @@ services:
 
   indexer:
     <<: *service
-    image: xbid-arc-indexer:e852f3e3de729d33904a941def87e6a4e6dcf451
+    image: xbid-arc-indexer:f6f16485d3da0a8f7322f39c13ef9d2271ac9db1
     build: ../../../indexer
     env_file:
       - ./network.env
