@@ -1,0 +1,14 @@
+{
+  "release": "20260929-v4-compat",
+  "purpose": "V4 pricing compatibility and homepage empty-state spacing, before governance activation",
+  "frontend": "6abeb51748f9e5d6f5fb5104318eba19b9f927bf",
+  "backend": "30ad6e776cc32a3d48e2a51224498d66c1f43fde",
+  "indexer": "7fa6120f5f716643c7585bbd19d12e9e746fd6bb",
+  "database": "3d4dfb9a2523dcf109f6dab72de615fd1ff8e737",
+  "contracts": "d21995e6594c35c50dca68c496c3c9bf9941e27e",
+  "servicesToRecreate": ["backend", "frontend"],
+  "databaseMigrations": false,
+  "resetIndexer": false,
+  "changesOnchainState": false,
+  "note": "Does not claim V4 is activated. Publish the 15000 USDC mainnet explanation only after verified governance execution."
+}

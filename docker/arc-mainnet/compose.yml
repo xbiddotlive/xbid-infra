@@ -53,7 +53,7 @@ services:
 
   backend:
     <<: *service
-    image: xbid-arc-backend:a5f53f53cc637ec5cbdf8d85b17465f31b2c6e25
+    image: xbid-arc-backend:30ad6e776cc32a3d48e2a51224498d66c1f43fde
     build: ../../../backend
     env_file:
       - ./network.env
@@ -83,7 +83,7 @@ services:
 
   frontend:
     <<: *service
-    image: xbid-arc-frontend:6d8422fc8d0f40c2d170dfb6fa5fb359010b2ba9
+    image: xbid-arc-frontend:6abeb51748f9e5d6f5fb5104318eba19b9f927bf
     build:
       context: ../../../frontend
       args:
