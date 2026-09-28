@@ -1,7 +1,9 @@
 # XBID Arc mainnet / single-server release
 
 Only for the authorized new server `69.55.59.184`. No old Kubernetes resources.
-Contracts activated on Arc 5042 at block 23214351; Factory proxy default version 3.
+Contracts initially activated on Arc 5042 at block 23214351. V4 became the Factory
+default at block 23230260, with a 15,000 USDC crown activation reserve. Existing
+contests keep their original immutable version and threshold.
 
 Layout: `/opt/xbid-arc/releases/<release>/{frontend,backend,indexer,database,infra}`.
 Build contexts must be `git archive` exports of the exact pushed commits in the image tags.

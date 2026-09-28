@@ -1,0 +1,15 @@
+{
+  "release": "20260929-v4-live",
+  "purpose": "Mainnet documentation aligned with verified V4 activation",
+  "frontend": "77fdb15ae734600b3e7d9d0777f75d78f4613cd2",
+  "backend": "30ad6e776cc32a3d48e2a51224498d66c1f43fde",
+  "indexer": "7fa6120f5f716643c7585bbd19d12e9e746fd6bb",
+  "database": "3d4dfb9a2523dcf109f6dab72de615fd1ff8e737",
+  "activationTransaction": "0x487317a75d4dad249bce4dd2e63862acfd97d59de63c861f54c20811f8155dc5",
+  "activationBlock": 23230260,
+  "defaultMarketVersion": 4,
+  "crownActivationReserveUnits": "15000000000",
+  "servicesToRecreate": ["frontend"],
+  "databaseMigrations": false,
+  "resetIndexer": false
+}
