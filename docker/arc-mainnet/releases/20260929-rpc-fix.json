@@ -11,6 +11,16 @@
   "buildMemoryLimitBytes": 3221225472,
   "buildCpuLimit": 2,
   "buildMaxParallelism": 1,
+  "imageId": "sha256:48f1ded7f1f414288aa856bc6949d9936fb19bdf342b96fff6e54cf14d4dcde7",
+  "deploymentStatus": "pending-server-recovery",
+  "localImageValidation": {
+    "chainId": 5042,
+    "balanceRead": "passed",
+    "parameterlessGasPriceRead": "passed",
+    "writeMethodsBlocked": true,
+    "crossOriginBlocked": true,
+    "launchPageStatus": 200
+  },
   "servicesToRecreate": ["frontend"],
   "databaseMigrations": false,
   "resetIndexer": false,
