@@ -12,7 +12,13 @@ Do not copy local environment files, testnet databases, wallet keys, or git cred
 
 1. Export/push sources, copy release, then generate credentials once with the supplied Node script
    (bind secret directory to `/secrets`; never print values). Keep that directory mode 0700.
-2. `docker compose config --quiet`; build sequentially on the 4GB host.
+2. `docker compose config --quiet`; build Linux/amd64 images off the production host.
+   The 4GB host must not run an unrestricted build alongside live services. Compose
+   service `mem_limit` settings do not limit BuildKit or Next.js compilation.
+   Use a dedicated local/CI BuildKit worker with a 3GB memory limit, a 2-CPU quota,
+   and `max-parallelism = 1`; export the exact pushed commit and pass the public
+   mainnet build arguments from this Compose file. Transfer/load the resulting image,
+   verify its architecture and tag, then deploy with `--no-build`.
 3. `docker compose up -d postgres indexer backend frontend`. No database/API/indexer public ports.
 4. Check `http://127.0.0.1:3100/api/backend/v1/health`, empty mainnet discovery and indexer sync.
 5. Verify the root DNS record points at this server; start `docker compose --profile public up -d caddy`.
@@ -33,3 +39,10 @@ The frontend clears the historical default testnet contest. No fabricated volume
 Rollback: point `current` at the previous accepted release and `docker compose up -d --no-build` with
 its recorded image IDs. Do not roll back by dropping data volumes. First production launch has no earlier
 application release: turn off only this project's public Caddy service if acceptance fails.
+
+Image cleanup: identify XBID image tags and inspect references from **all** containers,
+including stopped containers. Retain the running, pending-release and previous accepted
+rollback images. Remove only explicitly identified obsolete XBID image tags without
+`--force`. Never use global `docker system prune`, volume pruning, or cleanup of other
+projects. A dedicated XBID build worker's disposable cache may be pruned after its final
+image has been loaded and verified. Image cleanup frees disk, not live process memory.
