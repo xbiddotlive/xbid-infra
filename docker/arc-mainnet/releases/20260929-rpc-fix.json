@@ -12,7 +12,25 @@
   "buildCpuLimit": 2,
   "buildMaxParallelism": 1,
   "imageId": "sha256:48f1ded7f1f414288aa856bc6949d9936fb19bdf342b96fff6e54cf14d4dcde7",
-  "deploymentStatus": "pending-server-recovery",
+  "deploymentStatus": "deployed-verified",
+  "publicValidation": {
+    "origin": "https://xbid.live",
+    "chainId": 5042,
+    "balanceRead": "passed",
+    "writeMethodsBlocked": true,
+    "crossOriginBlocked": true,
+    "backendHealth": "ok",
+    "launchPageStatus": 200,
+    "braveBalanceDisplay": "10.8 usdc",
+    "walletTransactionsSubmitted": false
+  },
+  "buildIncident": {
+    "cause": "Unbounded on-host build exhausted 4 GB host memory with no swap",
+    "indexerAutomaticRestarts": 1,
+    "databaseRestarted": false,
+    "backendRestarted": false,
+    "resolution": "Built off-host with bounded dedicated BuildKit; loaded verified linux/amd64 image"
+  },
   "localImageValidation": {
     "chainId": 5042,
     "balanceRead": "passed",
@@ -22,6 +40,23 @@
     "launchPageStatus": 200
   },
   "servicesToRecreate": ["frontend"],
+  "cleanup": {
+    "removedRemoteImageTags": [
+        "xbid-arc-frontend:6abeb51748f9e5d6f5fb5104318eba19b9f927bf",
+        "xbid-arc-frontend:6d8422fc8d0f40c2d170dfb6fa5fb359010b2ba9",
+        "xbid-arc-frontend:6435d41d739d00cbf31c68288be70c2c36e7e2c9",
+        "xbid-arc-indexer:3f9b952979e6be26bf421b8436fdb452229bbd9c",
+        "xbid-arc-indexer:10ae26a0ee10fa85d033b0480bc14db08ea3c1da",
+        "xbid-arc-indexer:debdb03e0076ebc7482d27de5f7ec1c470d39d11",
+        "xbid-arc-indexer:f6f16485d3da0a8f7322f39c13ef9d2271ac9db1",
+        "xbid-arc-indexer:e852f3e3de729d33904a941def87e6a4e6dcf451",
+        "xbid-arc-indexer:c5a0b009eb970c2c5c6d3c9bdc08dee46c666bba"
+    ],
+    "preserved": "Current and preceding rollback images; all volumes, backups and shared base images",
+    "remoteDiskAvailableIncreaseBytes": 2719629312,
+    "localDedicatedBuildCacheReclaimed": "2.697 GB",
+    "recovery": "Previous release images remain immediately available; older images can be rebuilt from retained source commits"
+  },
   "databaseMigrations": false,
   "resetIndexer": false,
   "contractTransactions": false
