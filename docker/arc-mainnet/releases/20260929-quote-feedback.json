@@ -1,0 +1,20 @@
+{
+  "release": "20260929-quote-feedback",
+  "purpose": "Explain minimum trade amounts and quote failures; compact commentary composer",
+  "frontend": "7ee1cd4648a169cae7b38cf43001ec9e65fa7af3",
+  "backend": "30ad6e776cc32a3d48e2a51224498d66c1f43fde",
+  "indexer": "7fa6120f5f716643c7585bbd19d12e9e746fd6bb",
+  "database": "3d4dfb9a2523dcf109f6dab72de615fd1ff8e737",
+  "previousRelease": "20260929-rpc-fix",
+  "buildLocation": "local-dedicated-buildkit",
+  "buildPlatform": "linux/amd64",
+  "buildMemoryLimitBytes": 3221225472,
+  "buildCpuLimit": 2,
+  "buildMaxParallelism": 1,
+  "deploymentStatus": "prepared",
+  "checks": { "frontendCheck": "passed", "tests": 53 },
+  "servicesToRecreate": ["frontend"],
+  "databaseMigrations": false,
+  "resetIndexer": false,
+  "contractTransactions": false
+}
